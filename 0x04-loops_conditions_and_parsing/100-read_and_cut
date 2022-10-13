@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# this scrip displays the content of the /etc/passwd.
+
+filename="/etc/passwd"
+while IFS= read -r username userid homedir
+do
+	echo "$username $userid $homedir" | cut -d: -f 1,3,6
+done < $filename
