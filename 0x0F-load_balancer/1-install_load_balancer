@@ -22,6 +22,6 @@ backend backendnodes
 listen stats
     bind :32700
     stats enable
-    stats uri /" >> /etc/haproxy/haproxy.cfg
+    stats url /" >> /etc/haproxy/haproxy.cfg
 sudo haproxy -f /etc/haproxy/haproxy.cfg -c
 sudo service haproxy restart
