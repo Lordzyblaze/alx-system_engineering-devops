@@ -1,40 +1,35 @@
 #!/usr/bin/python3
-    """
-    Given employee ID, returns information about his/her TODO list progress.
-    """
+"""Given an Employee ID, returns information
+about his/her TODO list progress.
+"""
+import requests
+from sys import argv
 
-
-    import requests
-    import sys
-
-    base_url = 'https://jsonplaceholder.typicode.com/'
-
-
-    def do_request():
-        '''Performs request'''
-        if len(sys.argv) < 2:
-            return print('USAGE:', __file__, '<employee id>')
-        eid = sys.argv[1]
+if __name__ == '__main__':
         try:
-            _eid = int(sys.argv[1])
+             emp_id = int(argv[1])
         except ValueError:
-            return print('Employee id must be an integer')
-        response = requests.get(base_url + 'users/' + eid)
-        if response.status_code == 404:
-            return print('User id not found')
-        elif response.status_code != 200:
-            return print('Error: status_code:', response.status_code)
-        user = response.json()
-        response = requests.get(base_url + 'todos/')
-        if response.status_code != 200:
-            return print('Error: status_code:', response.status_code)
-        todos = response.json()
-        user_todos = [todo for todo in todos
-                      if todo.get('userId') == user.get('id')]
-        completed = [todo for todo in user_todos if todo.get('completed')]
-        print('Employee', user.get('name'),
-              'is done with tasks({}/{}):'.
-               format(len(completed), len(user_todos)))
-        [print('\t', todo.get('title')) for todo in completed]
-                                                                                                                            if __name__ == '__main__':
-        do_request()
+            exit()
+        api_url = 'https://jsonplaceholder.typicode.com'
+        user_uri = '{api}/users/{id}'.format(api=api_url, id=emp_id)
+        todo_uri = '{user_uri}/todos'.format(user_uri=user_uri)
+
+
+        res = requests.get(user_uri).json()
+        # Name of the employee
+        name = res.get('name')
+        # User TODO Response
+        res = requests.get(todo_uri).json()
+        # Total number of tasks, the sum of completed and non-completed tasks
+        total = len(res)
+        # Number of non-completed tasks
+        non_completed = sum([elem['completed'] is False for elem in res])
+        # Number of completed tasks
+        completed = total - non_completed
+        # Formatting the expected output
+        str = "Employee {emp_name} is done with tasks({completed}/{total}):"
+        print(str.format(emp_name=name, completed=completed, total=total))
+        # Printing completed tasks
+        for elem in res:
+            if elem.get('completed') is True:
+                print('\t', elem.get('title'))
