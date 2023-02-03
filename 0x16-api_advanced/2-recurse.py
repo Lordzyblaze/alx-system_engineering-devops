@@ -1,66 +1,45 @@
 #!/usr/bin/python3
-
-"""
-importing requests module
-"""
-
-from requests import get
+""" Exporting csv files"""
+import json
+import requests
+import sys
 
 
-def recurse(subreddit, hot_list=[], after=None):
+def recurse(subreddit, host_list=[], after="null"):
 
-    """
+    """Read reddit API and return top 10 hotspots """
     
-    function that queries the Reddit API and returns a list containing the
     
-    titles of all hot articles for a given subreddit.
+    user_pass_dict = {'user': username, 'passwd': password, 'api_type': 'json'}
     
-    """
-
+    headers = {'user-agent': 'Google Chrome Version 81.0.4404.129'}
     
-    params = {'show': 'all'}
-
+    payload = {"limit": "100", "after": after}
     
-    if subreddit is None or not isinstance(subreddit, str):
+    url = 'https://www.reddit.com/r/{}/hot.json'.format(subreddit)
     
-        return None
-
-        user_agent = {'User-agent': 'Google Chrome Version 81.0.4044.129'}
-
+    client = requests.session()
+    
+    client.headers = headers
+    
+    r = client.get(url, allow_redirects=False, params=payload)
+    
+    if r.status_code == 200:
+    
+        list_titles = r.json()['data']['children']
         
-        url = 'https://www.reddit.com/r/{}/hot/.json?after={}'.format(subreddit,after)
-
+        after = r.json()['data']['after']
         
-        response = get(url, headers=user_agent, params=params)
-
+        if after is not None:
         
-        if (response.status_code != 200):
-        
-            return None
-
+            host_list.append(list_titles[len(host_list)]['data']['title'])
             
-        all_data = response.json()
-
+            recurse(subreddit, host_list, after)
+            
+        else:
         
-        try:
+            return(host_list)
+            
+        else:
         
-            raw1 = all_data.get('data').get('children')
-            
-            after = all_data.get('data').get('after')
-
-            
-            if after is None:
-            
-                return hot_list
-
-                
-            for i in raw1:
-            
-                hot_list.append(i.get('data').get('title'))
-               
-           
-             return recurse(subreddit, hot_list, after)
-             
-         except:
-         
-             print("None")
+            return(None)
